@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/product.dart';
+import '../screens/product_detail_screen.dart';
 
 class ProductGridItem extends StatelessWidget {
   final Product product;
@@ -26,9 +27,16 @@ class ProductGridItem extends StatelessWidget {
             onPressed: () {},
           ),
         ),
-        child: Image.network(
-          product.imageUrl,
-          fit: BoxFit.cover,
+        child: InkWell(
+          onTap: () => Navigator.pushNamed(
+            context,
+            ProductDetailScreen.routeName,
+            arguments: product.id,
+          ),
+          child: Image.network(
+            product.imageUrl,
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );
