@@ -35,6 +35,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   # Fady Fawzy Comment: Flutter Version is 3.7.10
   cupertino_icons: ^1.0.5
+  # A wrapper around InheritedWidget to make them easier to use and more reusable.
+  provider: ^6.0.5
 
 dev_dependencies:
   flutter_test:
