@@ -40,6 +40,9 @@ class Products with ChangeNotifier {
 
   List<Product> get products => [..._products];
 
+  Product getProductById({required String id}) =>
+      _products.firstWhere((product) => product.id == id);
+
   void addProduct(Product product) {
     _products.add(product);
     ChangeNotifier();
