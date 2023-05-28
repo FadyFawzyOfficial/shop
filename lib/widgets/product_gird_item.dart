@@ -9,18 +9,27 @@ class ProductGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final product = Provider.of<Product>(context);
+    //! Now the ProductGridItem Widgets Tree doesn't update the entire Tree
+    //! when the Product changes (because listen: false), but the IconButton
+    //! Wrapped with Consumer that rebuild its child on product changes.
+    //* So the only (Favorite) IconButton will be rebuilt in the Tree.
+    final product = Provider.of<Product>(context, listen: false);
+    // debugPrint('Product Rebuild');
     return ClipRRect(
       borderRadius: const BorderRadius.all(Radius.circular(16)),
       child: GridTile(
         footer: GridTileBar(
           backgroundColor: Colors.black54,
-          leading: IconButton(
-            color: Theme.of(context).accentColor,
-            icon: Icon(product.isFavorite
-                ? Icons.favorite_rounded
-                : Icons.favorite_border_rounded),
-            onPressed: product.toggleFavorite,
+          leading: Consumer<Product>(
+            builder: (_, product, __) => IconButton(
+              color: Theme.of(context).accentColor,
+              icon: Icon(
+                product.isFavorite
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+              ),
+              onPressed: product.toggleFavorite,
+            ),
           ),
           title: Text(product.title),
           trailing: IconButton(
