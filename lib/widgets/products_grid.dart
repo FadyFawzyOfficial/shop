@@ -14,9 +14,12 @@ class ProductsGrid extends StatelessWidget {
     return GridView.builder(
       padding: const EdgeInsets.all(8),
       itemCount: products.length,
-      itemBuilder: (context, index) => ChangeNotifierProvider(
-        create: (context) => products[index],
-        child: ProductGridItem(),
+      itemBuilder: (context, index) => ChangeNotifierProvider.value(
+        //! For Efficiency: Use 'value:' if you are reusing an existing object
+        //! (like where cycle through a list -or gird- of products which already all exist)
+        //* It's recommended to use value constructor approach
+        value: products[index],
+        child: const ProductGridItem(),
       ),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
