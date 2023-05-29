@@ -5,6 +5,8 @@ class Cart with ChangeNotifier {
 
   Map<String, CartItem> get cartItems => {..._cartItems};
 
+  int get cartCount => _cartItems.length;
+
   void addCartItem(String productId, double price, String title) {
     if (_cartItems.containsKey(productId)) {
       // Change the quantity
@@ -25,6 +27,7 @@ class Cart with ChangeNotifier {
         ),
       );
     }
+    notifyListeners();
   }
 }
 

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/cart.dart';
+import '../widgets/badge.dart' as custom;
 import '../widgets/products_grid.dart';
 
 enum FavoriteOption {
@@ -23,6 +26,16 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
       appBar: AppBar(
         title: const Text('Shop'),
         actions: [
+          Consumer<Cart>(
+            builder: (_, cart, child) => custom.Badge(
+              value: '${cart.cartCount}',
+              child: child!,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.shopping_cart_rounded),
+              onPressed: () {},
+            ),
+          ),
           PopupMenuButton(
             itemBuilder: (context) => [
               const PopupMenuItem(
