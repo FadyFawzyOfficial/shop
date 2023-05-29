@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/cart.dart';
 import '../widgets/badge.dart' as custom;
 import '../widgets/products_grid.dart';
+import 'cart_screen.dart';
 
 enum FavoriteOption {
   favorites,
@@ -33,7 +34,8 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
             ),
             child: IconButton(
               icon: const Icon(Icons.shopping_cart_rounded),
-              onPressed: () {},
+              onPressed: () =>
+                  Navigator.pushNamed(context, CartScreen.routeName),
             ),
           ),
           PopupMenuButton(
