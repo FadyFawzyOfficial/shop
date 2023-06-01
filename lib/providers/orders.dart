@@ -7,7 +7,10 @@ class Orders with ChangeNotifier {
 
   List<Order> get orders => [..._orders];
 
-  void addOrder(List<CartItem> products, double amount) {
+  void addOrder({
+    required List<CartItem> products,
+    required double amount,
+  }) {
     _orders.insert(
       0,
       Order(
