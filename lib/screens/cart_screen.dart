@@ -53,6 +53,7 @@ class CartScreen extends StatelessWidget {
                           products: cartProvider.cartItems.values.toList(),
                           amount: cartProvider.totalAmount,
                         );
+                        cartProvider.clear();
                       },
                       child: Text('Order Now'.toUpperCase()),
                     ),
