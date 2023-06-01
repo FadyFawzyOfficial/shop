@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/cart.dart';
+import '../providers/orders.dart';
 import '../widgets/cart_list_item.dart';
 
 class CartScreen extends StatelessWidget {
@@ -47,7 +48,13 @@ class CartScreen extends StatelessWidget {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Provider.of<Orders>(context, listen: false).addOrder(
+                          products: cartProvider.cartItems.values.toList(),
+                          amount: cartProvider.totalAmount,
+                        );
+                        cartProvider.clear();
+                      },
                       child: Text('Order Now'.toUpperCase()),
                     ),
                   ],
