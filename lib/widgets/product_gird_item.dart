@@ -37,8 +37,20 @@ class ProductGridItem extends StatelessWidget {
           trailing: IconButton(
             color: Theme.of(context).accentColor,
             icon: const Icon(Icons.shopping_cart_rounded),
-            onPressed: () =>
-                cart.addCartItem(product.id, product.price, product.title),
+            onPressed: () {
+              cart.addCartItem(product.id, product.price, product.title);
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Item was added'),
+                  duration: const Duration(seconds: 2),
+                  action: SnackBarAction(
+                    label: 'UNDO',
+                    onPressed: () => cart.reduceItemQuantity(product.id),
+                  ),
+                ),
+              );
+            },
           ),
         ),
         child: InkWell(
