@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../providers/product.dart';
+
 class EditProductScreen extends StatefulWidget {
   static const routeName = 'editProduct';
 
@@ -15,6 +17,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
   //! while the ImageUrl Input Field loosing the FocusNode.
   final _imageUrlController = TextEditingController();
   final _imageUrlFocusNode = FocusNode();
+  final _formKey = GlobalKey<FormState>();
+  var _product = Product.initial();
 
   @override
   void initState() {
@@ -27,24 +31,38 @@ class _EditProductScreenState extends State<EditProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Product'),
+        actions: [
+          IconButton(
+            onPressed: _saveForm,
+            icon: const Icon(Icons.save_rounded),
+          ),
+        ],
       ),
       body: Form(
+        key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             TextFormField(
               decoration: const InputDecoration(labelText: 'Title'),
               textInputAction: TextInputAction.next,
+              onSaved: (title) => _product = _product.copyWith(title: title),
             ),
             TextFormField(
               decoration: const InputDecoration(labelText: 'Price'),
               textInputAction: TextInputAction.next,
               keyboardType: TextInputType.number,
+              onSaved: (price) => _product = _product.copyWith(
+                price: double.tryParse(price ?? '0'),
+              ),
             ),
             TextFormField(
               decoration: const InputDecoration(labelText: 'Description'),
               keyboardType: TextInputType.multiline,
               maxLines: 3,
+              onSaved: (description) => _product = _product.copyWith(
+                description: description,
+              ),
               // textInputAction: TextInputAction.next,
             ),
             Row(
@@ -77,9 +95,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     focusNode: _imageUrlFocusNode,
                     //! onFieldSubmitted Dismisses the SoftKeyboard when done
                     //! onEditingComplete doesn't
-                    onFieldSubmitted: (_) => setState(() {}),
+                    onSaved: (imageUrl) => _product = _product.copyWith(
+                      imageUrl: imageUrl,
+                    ),
+                    // Maybe form.currentState.save effect == setState effect
+                    onFieldSubmitted: (_) => _saveForm(),
                   ),
-                )
+                ),
               ],
             ),
           ],
@@ -101,5 +123,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (!_imageUrlFocusNode.hasFocus) {
       setState(() {});
     }
+  }
+
+  void _saveForm() {
+    _formKey.currentState!.save();
+    print(_product);
   }
 }
