@@ -20,7 +20,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _imageUrlController = TextEditingController();
   final _imageUrlFocusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
-  var _product = Product.initial();
+  late final _passedProduct =
+      ModalRoute.of(context)?.settings.arguments as Product?;
+  late var _product = _passedProduct ?? Product.initial();
 
   @override
   void initState() {
@@ -30,6 +32,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_product.imageUrl != '') {
+      _imageUrlController.text = _product.imageUrl;
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Product'),
@@ -46,6 +51,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             TextFormField(
+              initialValue: _product.title,
               decoration: const InputDecoration(labelText: 'Title'),
               textInputAction: TextInputAction.next,
               validator: (title) {
@@ -57,6 +63,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
               onSaved: (title) => _product = _product.copyWith(title: title),
             ),
             TextFormField(
+              initialValue: '${_product.price != 0 ? _product.price : ''}',
               decoration: const InputDecoration(labelText: 'Price'),
               textInputAction: TextInputAction.next,
               keyboardType: TextInputType.number,
@@ -77,6 +84,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
               ),
             ),
             TextFormField(
+              initialValue: _product.description,
               decoration: const InputDecoration(labelText: 'Description'),
               keyboardType: TextInputType.multiline,
               maxLines: 3,

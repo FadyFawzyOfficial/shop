@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../providers/product.dart';
+import '../screens/edit_product_screen.dart';
 
 class UserProductListItem extends StatelessWidget {
   final Product product;
@@ -18,7 +19,11 @@ class UserProductListItem extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            onPressed: () {},
+            onPressed: () => Navigator.pushNamed(
+              context,
+              EditProductScreen.routeName,
+              arguments: product,
+            ),
             icon: Icon(
               Icons.edit_rounded,
               color: Theme.of(context).primaryColor,
