@@ -22,6 +22,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _formKey = GlobalKey<FormState>();
   late final _passedProduct =
       ModalRoute.of(context)?.settings.arguments as Product?;
+  late final _isUpdating = _passedProduct == null ? false : true;
   late var _product = _passedProduct ?? Product.initial();
 
   @override
@@ -184,10 +185,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   void _saveForm() {
     final formCurrentState = _formKey.currentState;
+    final productsProvider = Provider.of<Products>(context, listen: false);
     if (formCurrentState == null || !formCurrentState.validate()) return;
     formCurrentState.save();
     debugPrint('$_product');
-    Provider.of<Products>(context, listen: false).addProduct(_product);
+    _isUpdating
+        ? productsProvider.updateProduct(_product)
+        : productsProvider.addProduct(_product);
     Navigator.pop(context);
   }
 }
