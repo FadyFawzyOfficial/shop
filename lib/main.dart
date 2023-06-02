@@ -1,4 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'providers/cart.dart';
+import 'providers/orders.dart';
+import 'providers/products.dart';
+import 'screens/cart_screen.dart';
+import 'screens/orders_screen.dart';
+import 'screens/product_detail_screen.dart';
+import 'screens/products_overview_screen.dart';
 
 void main() => runApp(const MyApp());
 
@@ -9,21 +18,34 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: appName,
-      home: MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text(appName)),
-      body: const Center(child: Text('Let\'s build a shop!')),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          //! For Efficiency: Use 'create:' if you are creating a new instance.
+          //* It's recommended more than '.value:' Constructor.
+          create: (context) => Products(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => Cart(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => Orders(),
+        ),
+      ],
+      child: MaterialApp(
+        theme: ThemeData(
+          primarySwatch: Colors.purple,
+          accentColor: Colors.deepOrange,
+          fontFamily: 'Lato',
+        ),
+        title: appName,
+        home: const ProductsOverviewScreen(),
+        routes: {
+          ProductDetailScreen.routeName: (_) => const ProductDetailScreen(),
+          CartScreen.routeName: (_) => const CartScreen(),
+          OrdersScreen.routeName: (_) => const OrdersScreen(),
+        },
+      ),
     );
   }
 }
