@@ -23,7 +23,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   @override
   void initState() {
     super.initState();
-    _imageUrlFocusNode.addListener(_updateImageUrl);
+    _imageUrlFocusNode.addListener(_updateImagePreview);
   }
 
   @override
@@ -46,12 +46,30 @@ class _EditProductScreenState extends State<EditProductScreen> {
             TextFormField(
               decoration: const InputDecoration(labelText: 'Title'),
               textInputAction: TextInputAction.next,
+              validator: (title) {
+                if (title == null || title.isEmpty) {
+                  return 'Please, provide the product title.';
+                }
+                return null;
+              },
               onSaved: (title) => _product = _product.copyWith(title: title),
             ),
             TextFormField(
               decoration: const InputDecoration(labelText: 'Price'),
               textInputAction: TextInputAction.next,
               keyboardType: TextInputType.number,
+              validator: (price) {
+                if (price == null || price.isEmpty) {
+                  return 'Please, provide the product price.';
+                }
+                if (double.tryParse(price) == null) {
+                  return 'Please, enter a valid price.';
+                }
+                if (double.parse(price) < 0) {
+                  return 'Please, enter a number greater than zero.';
+                }
+                return null;
+              },
               onSaved: (price) => _product = _product.copyWith(
                 price: double.tryParse(price ?? '0'),
               ),
@@ -60,6 +78,15 @@ class _EditProductScreenState extends State<EditProductScreen> {
               decoration: const InputDecoration(labelText: 'Description'),
               keyboardType: TextInputType.multiline,
               maxLines: 3,
+              validator: (description) {
+                if (description == null || description.isEmpty) {
+                  return 'Please, enter a product description.';
+                }
+                if (description.length < 10) {
+                  return 'Product description should be at least 10 characters.';
+                }
+                return null;
+              },
               onSaved: (description) => _product = _product.copyWith(
                 description: description,
               ),
@@ -88,6 +115,20 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     textInputAction: TextInputAction.done,
                     keyboardType: TextInputType.url,
                     controller: _imageUrlController,
+                    validator: (url) {
+                      if (url == null || url.isEmpty) {
+                        return 'Please, enter an image URL.';
+                      }
+                      if (!url.startsWith('http')) {
+                        return 'Please, enter a valid URL.';
+                      }
+                      if (!url.endsWith('png') &&
+                          !url.endsWith('jpg') &&
+                          !url.endsWith('jpeg')) {
+                        return 'Please, enter a valid image URL.';
+                      }
+                      return null;
+                    },
                     //* Review "Image Input & Image Preview.mp4" video if you
                     //* get Stacked
                     //! With this _imageUrlFocusNode and its added Listener,
@@ -114,19 +155,27 @@ class _EditProductScreenState extends State<EditProductScreen> {
   @override
   void dispose() {
     _imageUrlController.dispose();
-    _imageUrlFocusNode.removeListener(_updateImageUrl);
+    _imageUrlFocusNode.removeListener(_updateImagePreview);
     _imageUrlFocusNode.dispose();
     super.dispose();
   }
 
-  void _updateImageUrl() {
+  //* Don't show a preview if we have an incorrect URL.
+  void _updateImagePreview() {
     if (!_imageUrlFocusNode.hasFocus) {
+      final url = _imageUrlController.text;
+      if (!url.startsWith('http') ||
+          (!url.endsWith('png') &&
+              !url.endsWith('jpg') &&
+              !url.endsWith('jpeg'))) return;
       setState(() {});
     }
   }
 
   void _saveForm() {
-    _formKey.currentState!.save();
-    print(_product);
+    final formCurrentState = _formKey.currentState;
+    if (formCurrentState == null || !formCurrentState.validate()) return;
+    formCurrentState.save();
+    debugPrint('$_product');
   }
 }
