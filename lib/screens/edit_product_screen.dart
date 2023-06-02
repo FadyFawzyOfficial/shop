@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../providers/product.dart';
+import '../providers/products.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const routeName = 'editProduct';
@@ -65,7 +67,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 if (double.tryParse(price) == null) {
                   return 'Please, enter a valid price.';
                 }
-                if (double.parse(price) < 0) {
+                if (double.parse(price) <= 0) {
                   return 'Please, enter a number greater than zero.';
                 }
                 return null;
@@ -177,5 +179,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (formCurrentState == null || !formCurrentState.validate()) return;
     formCurrentState.save();
     debugPrint('$_product');
+    Provider.of<Products>(context, listen: false).addProduct(_product);
+    Navigator.pop(context);
   }
 }
