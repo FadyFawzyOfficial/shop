@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 
@@ -52,11 +54,14 @@ class Products with ChangeNotifier {
     const path = '/products.json';
 
     final uri = Uri.https(domain, path);
-    post(uri, body: product.toJson());
-
-    _products.add(product);
-    // _products.insert(0, product); // at the start of the list
-    notifyListeners();
+    post(uri, body: product.toJson()).then((response) {
+      print(json.decode(response.body));
+      final postedProduct =
+          product.copyWith(id: json.decode(response.body)['name']);
+      _products.add(postedProduct);
+      // _products.insert(0, product); // at the start of the list
+      notifyListeners();
+    });
   }
 
   void updateProduct(Product updatedProduct) {
