@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 class Product with ChangeNotifier {
@@ -43,6 +45,33 @@ class Product with ChangeNotifier {
       imageUrl: '',
       price: 0,
     );
+  }
+
+  factory Product.fromJson(String source) =>
+      Product.fromMap(json.decode(source));
+
+  factory Product.fromMap(Map<String, dynamic> map) {
+    return Product(
+      id: map['id'],
+      title: map['title'],
+      description: map['description'],
+      imageUrl: map['imageUrl'],
+      price: map['price'],
+      isFavorite: map['isFavorite'],
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'imageUrl': imageUrl,
+      'price': price,
+      'isFavorite': isFavorite,
+    };
   }
 
   void toggleFavorite() {

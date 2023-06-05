@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart';
 
 import 'product.dart';
 
@@ -47,6 +48,12 @@ class Products with ChangeNotifier {
       _products.firstWhere((product) => product.id == id);
 
   void addProduct(Product product) {
+    const domain = 'fady-shop-default-rtdb.europe-west1.firebasedatabase.app';
+    const path = '/products.json';
+
+    final uri = Uri.https(domain, path);
+    post(uri, body: product.toJson());
+
     _products.add(product);
     // _products.insert(0, product); // at the start of the list
     notifyListeners();
