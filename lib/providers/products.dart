@@ -49,20 +49,31 @@ class Products with ChangeNotifier {
   Product getProductById({required String id}) =>
       _products.firstWhere((product) => product.id == id);
 
-  Future<void> addProduct(Product product) {
+  // When using async, the function which you use it always returns future,
+  // that future might then not yield anything in the end but it always returns a future
+  Future<void> addProduct(Product product) async {
     const domain = 'fady-shop-default-rtdb.europe-west1.firebasedatabase.app';
     const path = '/products.json';
-
     final uri = Uri.https(domain, path);
-    return post(uri, body: product.toJson()).then(
-      (response) {
-        final postedProduct =
-            product.copyWith(id: json.decode(response.body)['name']);
-        _products.add(postedProduct);
-        // _products.insert(0, product); // at the start of the list
-        notifyListeners();
-      },
-    );
+
+    try {
+      // We don't have to return future anymore because we automatically have
+      // this all wrapped into a future and that future will also be returned
+      // automatically.
+      await post(uri, body: product.toJson()).then(
+        (response) {
+          final postedProduct =
+              product.copyWith(id: json.decode(response.body)['name']);
+          _products.add(postedProduct);
+          // _products.insert(0, product); // at the start of the list
+          notifyListeners();
+        },
+      );
+    } catch (error) {
+      debugPrint('$error');
+      // Throw the error to handle it in the Widget Level.
+      rethrow;
+    }
   }
 
   void updateProduct(Product updatedProduct) {
