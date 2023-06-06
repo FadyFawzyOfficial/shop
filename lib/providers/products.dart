@@ -49,19 +49,20 @@ class Products with ChangeNotifier {
   Product getProductById({required String id}) =>
       _products.firstWhere((product) => product.id == id);
 
-  void addProduct(Product product) {
+  Future<void> addProduct(Product product) {
     const domain = 'fady-shop-default-rtdb.europe-west1.firebasedatabase.app';
     const path = '/products.json';
 
     final uri = Uri.https(domain, path);
-    post(uri, body: product.toJson()).then((response) {
-      print(json.decode(response.body));
-      final postedProduct =
-          product.copyWith(id: json.decode(response.body)['name']);
-      _products.add(postedProduct);
-      // _products.insert(0, product); // at the start of the list
-      notifyListeners();
-    });
+    return post(uri, body: product.toJson()).then(
+      (response) {
+        final postedProduct =
+            product.copyWith(id: json.decode(response.body)['name']);
+        _products.add(postedProduct);
+        // _products.insert(0, product); // at the start of the list
+        notifyListeners();
+      },
+    );
   }
 
   void updateProduct(Product updatedProduct) {
