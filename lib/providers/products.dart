@@ -59,7 +59,11 @@ class Products with ChangeNotifier {
     try {
       final List<Product> products = [];
       final response = await get(productsUri);
-      final fetchedData = json.decode(response.body) as Map<String, dynamic>;
+      final fetchedData = json.decode(response.body) as Map<String, dynamic>?;
+
+      // So that the following code doesn't run if fetched data is null and
+      // return here to avoid that you run code which would fail if you have no data
+      if (fetchedData == null) return;
 
       fetchedData.forEach((productId, productData) {
         products.add(Product.fromMap(productData).copyWith(id: productId));
