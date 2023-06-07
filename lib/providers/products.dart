@@ -115,6 +115,30 @@ class Products with ChangeNotifier {
     }
   }
 
+  Future<void> toggleProductFavorite(Product product) async {
+    product.toggleFavorite();
+    final productId = product.id;
+    final productUri = Uri.https(baseUrl, '/products/$productId.json');
+    final updatedProduct = product.toJson();
+    try {
+      final response = await patch(
+        productUri,
+        body: updatedProduct,
+      );
+
+      // The HTTP package only throws its own error for get and post requests
+      // if the server returns an error status code.
+      // For patch, put, delete, it doesn't do that.
+      if (response.statusCode >= 400) {
+        product.toggleFavorite();
+        throw HttpException(message: 'Could not update that product!.');
+      }
+    } catch (e) {
+      product.toggleFavorite();
+      rethrow;
+    }
+  }
+
   Future<void> removeProduct(String id) async {
     final productIndex = _products.indexWhere((product) => product.id == id);
     final removeProductUri = Uri.https(baseUrl, '/products/$id.json');

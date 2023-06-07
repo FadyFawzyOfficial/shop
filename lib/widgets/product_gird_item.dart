@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/cart.dart';
 import '../providers/product.dart';
+import '../providers/products.dart';
 import '../screens/product_detail_screen.dart';
 
 class ProductGridItem extends StatelessWidget {
@@ -16,6 +17,7 @@ class ProductGridItem extends StatelessWidget {
     //* So the only (Favorite) IconButton will be rebuilt in the Tree.
     final product = Provider.of<Product>(context, listen: false);
     final cart = Provider.of<Cart>(context, listen: false);
+    final scaffoldContext = ScaffoldMessenger.of(context);
     // debugPrint('Product Rebuild');
     return ClipRRect(
       borderRadius: const BorderRadius.all(Radius.circular(16)),
@@ -30,7 +32,15 @@ class ProductGridItem extends StatelessWidget {
                     ? Icons.favorite_rounded
                     : Icons.favorite_border_rounded,
               ),
-              onPressed: product.toggleFavorite,
+              onPressed: () async {
+                try {
+                  await Provider.of<Products>(context, listen: false)
+                      .toggleProductFavorite(product);
+                } catch (e) {
+                  scaffoldContext.hideCurrentSnackBar();
+                  scaffoldContext.showSnackBar(SnackBar(content: Text('$e')));
+                }
+              },
             ),
           ),
           title: Text(product.title),
