@@ -95,16 +95,12 @@ class Products with ChangeNotifier {
     }
   }
 
-  Future<void> updateProduct(Product updatedProduct) async {
-    final updatedProductId = updatedProduct.id;
-    final updateProductUri =
-        Uri.https(baseUrl, '/products/$updatedProductId.json');
-    final productIndex =
-        _products.indexWhere((product) => product.id == updatedProductId);
+  Future<void> updateProduct(Product product) async {
+    final productIndex = _products.indexWhere((x) => x.id == product.id);
     if (productIndex > -1) {
       try {
-        await patch(updateProductUri, body: updatedProduct.toJson());
-        _products[productIndex] = updatedProduct;
+        await patch(getProductUri(product.id), body: product.toJson());
+        _products[productIndex] = product;
         notifyListeners();
       } catch (e) {
         debugPrint('$e');
@@ -117,13 +113,11 @@ class Products with ChangeNotifier {
 
   Future<void> toggleProductFavorite(Product product) async {
     product.toggleFavorite();
-    final productId = product.id;
-    final productUri = Uri.https(baseUrl, '/products/$productId.json');
-    final updatedProduct = product.toJson();
+
     try {
       final response = await patch(
-        productUri,
-        body: updatedProduct,
+        getProductUri(product.id),
+        body: product.toJson(),
       );
 
       // The HTTP package only throws its own error for get and post requests
@@ -141,7 +135,6 @@ class Products with ChangeNotifier {
 
   Future<void> removeProduct(String id) async {
     final productIndex = _products.indexWhere((product) => product.id == id);
-    final removeProductUri = Uri.https(baseUrl, '/products/$id.json');
     final product = _products[productIndex];
 
     try {
@@ -151,7 +144,7 @@ class Products with ChangeNotifier {
       // For get and post, the HTTP package would have thrown an error and catch
       // would've kicked off, but here (delete) that is not happening and
       // therefore I want to throw my own error if that's the case.
-      final response = await delete(removeProductUri);
+      final response = await delete(getProductUri(id));
 
       // Check if response status code is greater than or equal than 400 which
       // means something went wrong and in that case, I want to throw my own error
@@ -162,7 +155,11 @@ class Products with ChangeNotifier {
         throw HttpException(message: 'Could not delete this product.');
       }
     } catch (e) {
+      _products.insert(productIndex, product);
+      notifyListeners();
       rethrow;
     }
   }
+
+  Uri getProductUri(String id) => Uri.https(baseUrl, '/products/$id.json');
 }
