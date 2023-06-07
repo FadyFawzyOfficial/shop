@@ -12,7 +12,7 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cartProvider = Provider.of<Cart>(context);
+    final cart = Provider.of<Cart>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cart'),
@@ -37,7 +37,7 @@ class CartScreen extends StatelessWidget {
                     const Spacer(),
                     Chip(
                       label: Text(
-                        '\$${cartProvider.totalAmount.toStringAsFixed(2)}',
+                        '\$${cart.totalAmount.toStringAsFixed(2)}',
                       ),
                       backgroundColor: Theme.of(context).primaryColor,
                       labelStyle: TextStyle(
@@ -47,16 +47,7 @@ class CartScreen extends StatelessWidget {
                             ?.color,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Provider.of<Orders>(context, listen: false).addOrder(
-                          products: cartProvider.cartItems.values.toList(),
-                          amount: cartProvider.totalAmount,
-                        );
-                        cartProvider.clear();
-                      },
-                      child: Text('Order Now'.toUpperCase()),
-                    ),
+                    OrderButton(cart: cart),
                   ],
                 ),
               ),
@@ -64,10 +55,10 @@ class CartScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Expanded(
               child: ListView.builder(
-                itemCount: cartProvider.cartCount,
+                itemCount: cart.cartCount,
                 itemBuilder: (context, index) => CartListItem(
-                  productId: cartProvider.cartItems.keys.toList()[index],
-                  cartItem: cartProvider.cartItems.values.toList()[index],
+                  productId: cart.cartItems.keys.toList()[index],
+                  cartItem: cart.cartItems.values.toList()[index],
                 ),
               ),
             ),
@@ -75,5 +66,48 @@ class CartScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// We put this into a separate widget with setState() (StatefulWidget), so we now
+// only re-execute this build method instead of that entire build
+// method up there (in the CartScreen) so we rebuild less which is not bad.
+class OrderButton extends StatefulWidget {
+  final Cart cart;
+  const OrderButton({super.key, required this.cart});
+
+  @override
+  State<OrderButton> createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  var _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      // Disable 'Order Now' button if the cart is empty
+      onPressed:
+          widget.cart.cartItems.isEmpty ? null : () => addOrder(widget.cart),
+      child: _isLoading
+          ? const Padding(
+              padding: EdgeInsets.all(8),
+              child: CircularProgressIndicator(),
+            )
+          : Text('Order Now'.toUpperCase()),
+    );
+  }
+
+  Future<void> addOrder(Cart cart) async {
+    setState(() => _isLoading = true);
+    try {
+      await Provider.of<Orders>(context, listen: false).addOrder(
+        products: cart.cartItems.values.toList(),
+        amount: cart.totalAmount,
+      );
+      cart.clear();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+    setState(() => _isLoading = false);
   }
 }
