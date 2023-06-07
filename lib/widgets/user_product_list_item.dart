@@ -12,6 +12,7 @@ class UserProductListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scaffoldContext = ScaffoldMessenger.of(context);
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: NetworkImage(product.imageUrl),
@@ -32,8 +33,19 @@ class UserProductListItem extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () => Provider.of<Products>(context, listen: false)
-                .removeProduct(product.id),
+            onPressed: () async {
+              try {
+                await Provider.of<Products>(context, listen: false)
+                    .removeProduct(product.id);
+              } catch (e) {
+                // of(context) can't actually be resolved anymore (in Future or async)
+                // It's already updating the widget there at this point of time,
+                // therefore it's not sure whether a context still refers to the
+                // same context it did before.
+                //!  ScaffoldMessenger.of(context)
+                scaffoldContext.showSnackBar(SnackBar(content: Text('$e')));
+              }
+            },
             icon: Icon(
               Icons.delete_rounded,
               color: Theme.of(context).colorScheme.error,
