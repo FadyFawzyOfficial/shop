@@ -5,14 +5,21 @@ import '../providers/cart.dart';
 import '../providers/orders.dart';
 import '../widgets/cart_list_item.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   static const routeName = 'cart';
 
   const CartScreen({super.key});
 
   @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  var _isLoading = false;
+
+  @override
   Widget build(BuildContext context) {
-    final cartProvider = Provider.of<Cart>(context);
+    final cart = Provider.of<Cart>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cart'),
@@ -37,7 +44,7 @@ class CartScreen extends StatelessWidget {
                     const Spacer(),
                     Chip(
                       label: Text(
-                        '\$${cartProvider.totalAmount.toStringAsFixed(2)}',
+                        '\$${cart.totalAmount.toStringAsFixed(2)}',
                       ),
                       backgroundColor: Theme.of(context).primaryColor,
                       labelStyle: TextStyle(
@@ -48,14 +55,13 @@ class CartScreen extends StatelessWidget {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {
-                        Provider.of<Orders>(context, listen: false).addOrder(
-                          products: cartProvider.cartItems.values.toList(),
-                          amount: cartProvider.totalAmount,
-                        );
-                        cartProvider.clear();
-                      },
-                      child: Text('Order Now'.toUpperCase()),
+                      onPressed: () => addOrder(cart),
+                      child: _isLoading
+                          ? const Padding(
+                              padding: EdgeInsets.all(8),
+                              child: CircularProgressIndicator(),
+                            )
+                          : Text('Order Now'.toUpperCase()),
                     ),
                   ],
                 ),
@@ -64,10 +70,10 @@ class CartScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Expanded(
               child: ListView.builder(
-                itemCount: cartProvider.cartCount,
+                itemCount: cart.cartCount,
                 itemBuilder: (context, index) => CartListItem(
-                  productId: cartProvider.cartItems.keys.toList()[index],
-                  cartItem: cartProvider.cartItems.values.toList()[index],
+                  productId: cart.cartItems.keys.toList()[index],
+                  cartItem: cart.cartItems.values.toList()[index],
                 ),
               ),
             ),
@@ -75,5 +81,15 @@ class CartScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> addOrder(Cart cart) async {
+    setState(() => _isLoading = true);
+    await Provider.of<Orders>(context, listen: false).addOrder(
+      products: cart.cartItems.values.toList(),
+      amount: cart.totalAmount,
+    );
+    cart.clear();
+    setState(() => _isLoading = false);
   }
 }
