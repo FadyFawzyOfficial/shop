@@ -38,7 +38,7 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
 
     // Important: If you add listen: false, you CAN use this in initState()!
     // Workarounds are only needed if you don't set listen to false.
-    // Provider.of<Products>(context).fetchAndSetProducts(); // WON'T WORK!
+    // Provider.of<Products>(context).fetchProducts(); // WON'T WORK!
     // Provider.of<Products>(context, listen: false).fetchProducts(); // WILL WORK!
 
     // => First Approach

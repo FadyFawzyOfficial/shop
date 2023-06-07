@@ -17,6 +17,25 @@ class Orders with ChangeNotifier {
 
   List<Order> get orders => [..._orders];
 
+  Future<void> fetchOrders() async {
+    try {
+      final List<Order> orders = [];
+      final response = await get(ordersUri);
+      final fetchedOrders = json.decode(response.body) as Map<String, dynamic>?;
+
+      // So that the following code doesn't run if fetched data is null and
+      // return here to avoid that you run code which would fail if you have no data
+      if (fetchedOrders == null) return;
+
+      fetchedOrders.forEach((orderId, orderData) =>
+          orders.insert(0, Order.fromMap(orderData).copyWith(id: orderId)));
+      _orders = orders;
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> addOrder({
     required List<CartItem> products,
     required double amount,
