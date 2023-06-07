@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
+import 'package:shop/models/http_exception.dart';
 
 import 'product.dart';
 
@@ -116,13 +117,26 @@ class Products with ChangeNotifier {
 
   Future<void> removeProduct(String id) async {
     final productIndex = _products.indexWhere((product) => product.id == id);
-    final removeProductUri = Uri.https(baseUrl, '/products/$id.json');
+    final removeProductUri = Uri.https(baseUrl, '/products/$id');
     final product = _products[productIndex];
+
     try {
       _products.removeAt(productIndex);
       notifyListeners();
 
-      await delete(removeProductUri);
+      // For get and post, the HTTP package would have thrown an error and catch
+      // would've kicked off, but here (delete) that is not happening and
+      // therefore I want to throw my own error if that's the case.
+      final response = await delete(removeProductUri);
+
+      // Check if response status code is greater than or equal than 400 which
+      // means something went wrong and in that case, I want to throw my own error
+      // and not continue with the following code.
+      if (response.statusCode >= 400) {
+        _products.insert(productIndex, product);
+        notifyListeners();
+        throw HttpException(message: 'Could not delete this product.');
+      }
     } catch (e) {
       rethrow;
     }
