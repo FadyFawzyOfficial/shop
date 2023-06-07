@@ -55,7 +55,9 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () => addOrder(cart),
+                      // Disable 'Order Now' button if the cart is empty
+                      onPressed:
+                          cart.cartItems.isEmpty ? null : () => addOrder(cart),
                       child: _isLoading
                           ? const Padding(
                               padding: EdgeInsets.all(8),
