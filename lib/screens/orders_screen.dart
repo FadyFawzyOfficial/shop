@@ -14,58 +14,68 @@ class OrdersScreen extends StatefulWidget {
   State<OrdersScreen> createState() => _OrdersScreenState();
 }
 
+// 1. Convert to StatefulWidget.
 class _OrdersScreenState extends State<OrdersScreen> {
-  // Just to be sure it's first time to open the Edit Product Screen
-  // var _isInit = true;
-  var _isLoading = false;
+  // 2. Add a property (Variable) of type Future.
+  late Future _orderFuture;
 
+  // 3. Add new method which return a Future.
+  // 4. In this method return the result of this call to fetch and set orders.
+  Future _obtainOrderFuture() {
+    return Provider.of<Orders>(context, listen: false).fetchOrders();
+  }
+
+  // 5. You should add initState, set the result of method to the earlier variable.
   @override
   void initState() {
     super.initState();
-
-    // In initState, all these of context things don't work
-    // Like ModalRoute.of(context) and so on ...
-    // Because the widget is not fully wired up with everything here.
-    // So therefore we can't do that here.
-
-    // Important: If you add listen: false, you CAN use this in initState()!
-    // Workarounds are only needed if you don't set listen to false.
-    // Provider.of<Orders>(context).fetchOrders(); // WON'T WORK!
-    _isLoading = true;
-    Provider.of<Orders>(context, listen: false)
-        .fetchOrders()
-        .then((_) => _isLoading = false); // WILL WORK!
-
-    // => First Approach
-    // Future.delayed(Duration.zero).then((_) {
-    //   Provider.of<Products>(context).fetchAndSetProducts();
-    // });
+    _orderFuture = _obtainOrderFuture();
   }
 
-  // => Second Approach
-  // @override
-  // void didChangeDependencies() {
-  //   if (_isInit) {
-  //     Provider.of<Products>(context).fetchAndSetProducts();
-  //   }
-  //   _isInit = false;
-  //   super.didChangeDependencies();
-  // }
-
+  // If you had something (some other state you're managing or anything like that)
+  // in this widget which cause build method to run again (rebuild),
+  // then fetchOrder() would of course, also be executed.
+  // We might want to avoid if just something else changed in this widget,
+  // if there is no reason to fetch new orders.
+  // You don't want to fetch new orders just because something else changed in
+  // this widget, which doesn't affect the orders.
   @override
   Widget build(BuildContext context) {
-    final ordersProvider = Provider.of<Orders>(context);
+    // This print statement to be sure the build method should now build one time.
+    print('building orders');
+    //! Don't set up the listener here for Orders data when U use the FutureBuilder
+    //! Because this will continue rebuilding the entire Screen.
+    // final ordersProvider = Provider.of<Orders>(context, listen: false);
     return Scaffold(
       appBar: AppBar(title: const Text('Orders')),
       drawer: const AppDrawer(),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: ordersProvider.orders.length,
-              itemBuilder: (context, index) => OrderListItem(
-                order: ordersProvider.orders[index],
+      // FutureBuilder Widget takes a future and then automatically starts listening to that.
+      //! So it adds the then and the catch error method for you as developer.
+      // And it takes a builder which will get the current snapshot to current state
+      // of your future so that you can build different content based on what your future return.
+      body: FutureBuilder(
+        // 6. Set future using variable initialized in initState()
+        future: _orderFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.error != null) {
+            return const Center(child: Text('An error occurred!'));
+          } else {
+            // Use a consumer of the Orders data in here
+            // In that case here, because only here I'm interested in order data.
+            return Consumer<Orders>(
+              // It will really just rebuild the parts that do need rebuilding.
+              builder: (context, ordersProvider, child) => ListView.builder(
+                itemCount: ordersProvider.orders.length,
+                itemBuilder: (context, index) => OrderListItem(
+                  order: ordersProvider.orders[index],
+                ),
               ),
-            ),
+            );
+          }
+        },
+      ),
     );
   }
 }
