@@ -5,17 +5,10 @@ import '../providers/cart.dart';
 import '../providers/orders.dart';
 import '../widgets/cart_list_item.dart';
 
-class CartScreen extends StatefulWidget {
+class CartScreen extends StatelessWidget {
   static const routeName = 'cart';
 
   const CartScreen({super.key});
-
-  @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  var _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -54,17 +47,7 @@ class _CartScreenState extends State<CartScreen> {
                             ?.color,
                       ),
                     ),
-                    TextButton(
-                      // Disable 'Order Now' button if the cart is empty
-                      onPressed:
-                          cart.cartItems.isEmpty ? null : () => addOrder(cart),
-                      child: _isLoading
-                          ? const Padding(
-                              padding: EdgeInsets.all(8),
-                              child: CircularProgressIndicator(),
-                            )
-                          : Text('Order Now'.toUpperCase()),
-                    ),
+                    OrderButton(cart: cart),
                   ],
                 ),
               ),
@@ -82,6 +65,35 @@ class _CartScreenState extends State<CartScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// We put this into a separate widget with setState() (StatefulWidget), so we now
+// only re-execute this build method instead of that entire build
+// method up there (in the CartScreen) so we rebuild less which is not bad.
+class OrderButton extends StatefulWidget {
+  final Cart cart;
+  const OrderButton({super.key, required this.cart});
+
+  @override
+  State<OrderButton> createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  var _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      // Disable 'Order Now' button if the cart is empty
+      onPressed:
+          widget.cart.cartItems.isEmpty ? null : () => addOrder(widget.cart),
+      child: _isLoading
+          ? const Padding(
+              padding: EdgeInsets.all(8),
+              child: CircularProgressIndicator(),
+            )
+          : Text('Order Now'.toUpperCase()),
     );
   }
 
