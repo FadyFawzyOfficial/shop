@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import 'cart.dart';
+import '../models/cart_item.dart';
+import '../models/order.dart';
 
 class Orders with ChangeNotifier {
   List<Order> _orders = [];
@@ -22,18 +23,4 @@ class Orders with ChangeNotifier {
     );
     notifyListeners();
   }
-}
-
-class Order {
-  final String id;
-  final double amount;
-  final List<CartItem> products;
-  final DateTime dateTime;
-
-  Order({
-    required this.id,
-    required this.amount,
-    required this.products,
-    required this.dateTime,
-  });
 }
