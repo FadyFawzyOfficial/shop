@@ -87,11 +87,15 @@ class _CartScreenState extends State<CartScreen> {
 
   Future<void> addOrder(Cart cart) async {
     setState(() => _isLoading = true);
-    await Provider.of<Orders>(context, listen: false).addOrder(
-      products: cart.cartItems.values.toList(),
-      amount: cart.totalAmount,
-    );
-    cart.clear();
+    try {
+      await Provider.of<Orders>(context, listen: false).addOrder(
+        products: cart.cartItems.values.toList(),
+        amount: cart.totalAmount,
+      );
+      cart.clear();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
     setState(() => _isLoading = false);
   }
 }

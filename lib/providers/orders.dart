@@ -33,6 +33,8 @@ class Orders with ChangeNotifier {
       _orders.insert(0, order);
       notifyListeners();
     } catch (e) {
+      debugPrint('$e');
+      // Throw the error to handle it in Widget Level
       throw HttpException(message: 'Could not Make an Order.');
     }
   }
