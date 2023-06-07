@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/cart.dart';
+import '../providers/products.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/badge.dart' as custom;
 import '../widgets/products_grid.dart';
@@ -21,6 +22,39 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var showFavorites = false;
+
+  // Just to be sure it's first time to open the ProductsOverviewScreen
+  var _isInit = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // In initState, all these of context things don't work
+    // Like ModalRoute.of(context) and so on ...
+    // Because the widget is not fully wired up with everything here.
+    // So therefore we can't do that here.
+
+    // Important: If you add listen: false, you CAN use this in initState()!
+    // Workarounds are only needed if you don't set listen to false.
+    // Provider.of<Products>(context).fetchAndSetProducts(); // WON'T WORK!
+    // Provider.of<Products>(context, listen: false).fetchProducts(); // WILL WORK!
+
+    // => First Approach
+    // Future.delayed(Duration.zero).then((_) {
+    //   Provider.of<Products>(context).fetchAndSetProducts();
+    // });
+  }
+
+  // => Second Approach
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      Provider.of<Products>(context, listen: false).fetchProducts();
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
