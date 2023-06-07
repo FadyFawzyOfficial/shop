@@ -94,12 +94,21 @@ class Products with ChangeNotifier {
     }
   }
 
-  void updateProduct(Product updatedProduct) {
+  Future<void> updateProduct(Product updatedProduct) async {
+    final updatedProductId = updatedProduct.id;
+    final updateProductUri =
+        Uri.https(baseUrl, '/products/$updatedProductId.json');
     final productIndex =
-        _products.indexWhere((product) => product.id == updatedProduct.id);
+        _products.indexWhere((product) => product.id == updatedProductId);
     if (productIndex > -1) {
-      _products[productIndex] = updatedProduct;
-      notifyListeners();
+      try {
+        await patch(updateProductUri, body: updatedProduct.toJson());
+        _products[productIndex] = updatedProduct;
+        notifyListeners();
+      } catch (e) {
+        debugPrint('$e');
+        rethrow;
+      }
     } else {
       debugPrint('...');
     }

@@ -198,9 +198,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     debugPrint('$_product');
     setState(() => _isLoading = true);
     if (_isUpdating) {
-      productsProvider.updateProduct(_product);
-      setState(() => _isLoading = false);
-      Navigator.pop(context);
+      await productsProvider.updateProduct(_product);
     } else {
       try {
         await productsProvider.addProduct(_product);
@@ -219,11 +217,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ],
           ),
         );
-      } finally {
-        // The following will execute after dialog closed by user.
-        setState(() => _isLoading = false);
-        Navigator.pop(context);
       }
     }
+    setState(() => _isLoading = false);
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 }
