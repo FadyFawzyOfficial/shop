@@ -25,6 +25,7 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
 
   // Just to be sure it's first time to open the ProductsOverviewScreen
   var _isInit = true;
+  var _isLoading = false;
 
   @override
   void initState() {
@@ -50,7 +51,10 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   @override
   void didChangeDependencies() {
     if (_isInit) {
-      Provider.of<Products>(context, listen: false).fetchProducts();
+      _isLoading = true;
+      Provider.of<Products>(context, listen: false)
+          .fetchProducts()
+          .then((_) => setState(() => _isLoading = false));
     }
     _isInit = false;
     super.didChangeDependencies();
@@ -90,7 +94,9 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
           ),
         ],
       ),
-      body: ProductsGrid(showFavorites: showFavorites),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ProductsGrid(showFavorites: showFavorites),
     );
   }
 }
