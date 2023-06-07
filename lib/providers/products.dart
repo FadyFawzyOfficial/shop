@@ -117,7 +117,7 @@ class Products with ChangeNotifier {
 
   Future<void> removeProduct(String id) async {
     final productIndex = _products.indexWhere((product) => product.id == id);
-    final removeProductUri = Uri.https(baseUrl, '/products/$id');
+    final removeProductUri = Uri.https(baseUrl, '/products/$id.json');
     final product = _products[productIndex];
 
     try {
