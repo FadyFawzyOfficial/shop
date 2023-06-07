@@ -114,8 +114,17 @@ class Products with ChangeNotifier {
     }
   }
 
-  void removeProduct(String id) {
-    _products.removeWhere((product) => product.id == id);
-    notifyListeners();
+  Future<void> removeProduct(String id) async {
+    final productIndex = _products.indexWhere((product) => product.id == id);
+    final removeProductUri = Uri.https(baseUrl, '/products/$id.json');
+    final product = _products[productIndex];
+    try {
+      _products.removeAt(productIndex);
+      notifyListeners();
+
+      await delete(removeProductUri);
+    } catch (e) {
+      rethrow;
+    }
   }
 }
