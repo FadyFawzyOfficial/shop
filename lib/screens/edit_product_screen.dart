@@ -24,6 +24,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
       ModalRoute.of(context)?.settings.arguments as Product?;
   late final _isUpdating = _passedProduct == null ? false : true;
   late var _product = _passedProduct ?? Product.initial();
+  var _isLoading = false;
 
   @override
   void initState() {
@@ -46,119 +47,125 @@ class _EditProductScreenState extends State<EditProductScreen> {
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              initialValue: _product.title,
-              decoration: const InputDecoration(labelText: 'Title'),
-              textInputAction: TextInputAction.next,
-              validator: (title) {
-                if (title == null || title.isEmpty) {
-                  return 'Please, provide the product title.';
-                }
-                return null;
-              },
-              onSaved: (title) => _product = _product.copyWith(title: title),
-            ),
-            TextFormField(
-              initialValue: '${_product.price != 0 ? _product.price : ''}',
-              decoration: const InputDecoration(labelText: 'Price'),
-              textInputAction: TextInputAction.next,
-              keyboardType: TextInputType.number,
-              validator: (price) {
-                if (price == null || price.isEmpty) {
-                  return 'Please, provide the product price.';
-                }
-                if (double.tryParse(price) == null) {
-                  return 'Please, enter a valid price.';
-                }
-                if (double.parse(price) <= 0) {
-                  return 'Please, enter a number greater than zero.';
-                }
-                return null;
-              },
-              onSaved: (price) => _product = _product.copyWith(
-                price: double.tryParse(price ?? '0'),
-              ),
-            ),
-            TextFormField(
-              initialValue: _product.description,
-              decoration: const InputDecoration(labelText: 'Description'),
-              keyboardType: TextInputType.multiline,
-              maxLines: 3,
-              validator: (description) {
-                if (description == null || description.isEmpty) {
-                  return 'Please, enter a product description.';
-                }
-                if (description.length < 10) {
-                  return 'Product description should be at least 10 characters.';
-                }
-                return null;
-              },
-              onSaved: (description) => _product = _product.copyWith(
-                description: description,
-              ),
-              // textInputAction: TextInputAction.next,
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  margin: const EdgeInsetsDirectional.only(top: 16, end: 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                  ),
-                  child: _imageUrlController.text.isEmpty
-                      ? const Text('Enter a URL')
-                      : Image.network(
-                          _imageUrlController.text,
-                          fit: BoxFit.cover,
-                        ),
-                ),
-                Expanded(
-                  child: TextFormField(
-                    decoration: const InputDecoration(labelText: 'Image URL'),
-                    textInputAction: TextInputAction.done,
-                    keyboardType: TextInputType.url,
-                    controller: _imageUrlController,
-                    validator: (url) {
-                      if (url == null || url.isEmpty) {
-                        return 'Please, enter an image URL.';
-                      }
-                      if (!url.startsWith('http')) {
-                        return 'Please, enter a valid URL.';
-                      }
-                      if (!url.endsWith('png') &&
-                          !url.endsWith('jpg') &&
-                          !url.endsWith('jpeg')) {
-                        return 'Please, enter a valid image URL.';
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  TextFormField(
+                    initialValue: _product.title,
+                    decoration: const InputDecoration(labelText: 'Title'),
+                    textInputAction: TextInputAction.next,
+                    validator: (title) {
+                      if (title == null || title.isEmpty) {
+                        return 'Please, provide the product title.';
                       }
                       return null;
                     },
-                    //* Review "Image Input & Image Preview.mp4" video if you
-                    //* get Stacked
-                    //! With this _imageUrlFocusNode and its added Listener,
-                    //! we get the preview when we lose focus
-                    focusNode: _imageUrlFocusNode,
-                    //! onFieldSubmitted Dismisses the SoftKeyboard when done
-                    //! onEditingComplete doesn't
-                    onSaved: (imageUrl) => _product = _product.copyWith(
-                      imageUrl: imageUrl,
-                    ),
-                    // Maybe form.currentState.save effect == setState effect
-                    onFieldSubmitted: (_) => _saveForm(),
+                    onSaved: (title) =>
+                        _product = _product.copyWith(title: title),
                   ),
-                ),
-              ],
+                  TextFormField(
+                    initialValue:
+                        '${_product.price != 0 ? _product.price : ''}',
+                    decoration: const InputDecoration(labelText: 'Price'),
+                    textInputAction: TextInputAction.next,
+                    keyboardType: TextInputType.number,
+                    validator: (price) {
+                      if (price == null || price.isEmpty) {
+                        return 'Please, provide the product price.';
+                      }
+                      if (double.tryParse(price) == null) {
+                        return 'Please, enter a valid price.';
+                      }
+                      if (double.parse(price) <= 0) {
+                        return 'Please, enter a number greater than zero.';
+                      }
+                      return null;
+                    },
+                    onSaved: (price) => _product = _product.copyWith(
+                      price: double.tryParse(price ?? '0'),
+                    ),
+                  ),
+                  TextFormField(
+                    initialValue: _product.description,
+                    decoration: const InputDecoration(labelText: 'Description'),
+                    keyboardType: TextInputType.multiline,
+                    maxLines: 3,
+                    validator: (description) {
+                      if (description == null || description.isEmpty) {
+                        return 'Please, enter a product description.';
+                      }
+                      if (description.length < 10) {
+                        return 'Product description should be at least 10 characters.';
+                      }
+                      return null;
+                    },
+                    onSaved: (description) => _product = _product.copyWith(
+                      description: description,
+                    ),
+                    // textInputAction: TextInputAction.next,
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        margin:
+                            const EdgeInsetsDirectional.only(top: 16, end: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                        ),
+                        child: _imageUrlController.text.isEmpty
+                            ? const Text('Enter a URL')
+                            : Image.network(
+                                _imageUrlController.text,
+                                fit: BoxFit.cover,
+                              ),
+                      ),
+                      Expanded(
+                        child: TextFormField(
+                          decoration:
+                              const InputDecoration(labelText: 'Image URL'),
+                          textInputAction: TextInputAction.done,
+                          keyboardType: TextInputType.url,
+                          controller: _imageUrlController,
+                          validator: (url) {
+                            if (url == null || url.isEmpty) {
+                              return 'Please, enter an image URL.';
+                            }
+                            if (!url.startsWith('http')) {
+                              return 'Please, enter a valid URL.';
+                            }
+                            if (!url.endsWith('png') &&
+                                !url.endsWith('jpg') &&
+                                !url.endsWith('jpeg')) {
+                              return 'Please, enter a valid image URL.';
+                            }
+                            return null;
+                          },
+                          //* Review "Image Input & Image Preview.mp4" video if you
+                          //* get Stacked
+                          //! With this _imageUrlFocusNode and its added Listener,
+                          //! we get the preview when we lose focus
+                          focusNode: _imageUrlFocusNode,
+                          //! onFieldSubmitted Dismisses the SoftKeyboard when done
+                          //! onEditingComplete doesn't
+                          onSaved: (imageUrl) => _product = _product.copyWith(
+                            imageUrl: imageUrl,
+                          ),
+                          // Maybe form.currentState.save effect == setState effect
+                          onFieldSubmitted: (_) => _saveForm(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -183,15 +190,37 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
   }
 
-  void _saveForm() {
+  Future<void> _saveForm() async {
     final formCurrentState = _formKey.currentState;
     final productsProvider = Provider.of<Products>(context, listen: false);
     if (formCurrentState == null || !formCurrentState.validate()) return;
     formCurrentState.save();
     debugPrint('$_product');
-    _isUpdating
-        ? productsProvider.updateProduct(_product)
-        : productsProvider.addProduct(_product);
+    setState(() => _isLoading = true);
+    if (_isUpdating) {
+      await productsProvider.updateProduct(_product);
+    } else {
+      try {
+        await productsProvider.addProduct(_product);
+      } catch (e) {
+        // Handle the thrown error and Show dialog that shows error message
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('An error occurred!'),
+            content: const Text('Something went wrong!'),
+            actions: [
+              TextButton(
+                onPressed: Navigator.of(context).pop,
+                child: const Text('Okay'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+    setState(() => _isLoading = false);
+    if (!mounted) return;
     Navigator.pop(context);
   }
 }

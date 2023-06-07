@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.5
   # A wrapper around InheritedWidget to make them easier to use and more reusable.
   provider: ^6.0.5
+  # A composable, multi-platform, Future-based API for HTTP requests.
+  http: ^0.13.6
 
 dev_dependencies:
   flutter_test:
