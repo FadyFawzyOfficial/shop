@@ -19,6 +19,7 @@ class Orders with ChangeNotifier {
 
   Future<void> fetchOrders() async {
     try {
+      final List<Order> orders = [];
       final response = await get(ordersUri);
       final fetchedOrders = json.decode(response.body) as Map<String, dynamic>?;
 
@@ -27,7 +28,8 @@ class Orders with ChangeNotifier {
       if (fetchedOrders == null) return;
 
       fetchedOrders.forEach((orderId, orderData) =>
-          _orders.insert(0, Order.fromMap(orderData).copyWith(id: orderId)));
+          orders.insert(0, Order.fromMap(orderData).copyWith(id: orderId)));
+      _orders = orders;
       notifyListeners();
     } catch (e) {
       rethrow;

@@ -17,6 +17,7 @@ class OrdersScreen extends StatefulWidget {
 class _OrdersScreenState extends State<OrdersScreen> {
   // Just to be sure it's first time to open the Edit Product Screen
   // var _isInit = true;
+  var _isLoading = false;
 
   @override
   void initState() {
@@ -30,7 +31,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
     // Important: If you add listen: false, you CAN use this in initState()!
     // Workarounds are only needed if you don't set listen to false.
     // Provider.of<Orders>(context).fetchOrders(); // WON'T WORK!
-    Provider.of<Orders>(context, listen: false).fetchOrders(); // WILL WORK!
+    _isLoading = true;
+    Provider.of<Orders>(context, listen: false)
+        .fetchOrders()
+        .then((_) => _isLoading = false); // WILL WORK!
 
     // => First Approach
     // Future.delayed(Duration.zero).then((_) {
@@ -54,12 +58,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Orders')),
       drawer: const AppDrawer(),
-      body: ListView.builder(
-        itemCount: ordersProvider.orders.length,
-        itemBuilder: (context, index) => OrderListItem(
-          order: ordersProvider.orders[index],
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: ordersProvider.orders.length,
+              itemBuilder: (context, index) => OrderListItem(
+                order: ordersProvider.orders[index],
+              ),
+            ),
     );
   }
 }
