@@ -90,7 +90,8 @@ class Products with ChangeNotifier {
       // We don't have to return future anymore because we automatically have
       // this all wrapped into a future and that future will also be returned
       // automatically.
-      await post(productsUri, body: product.toJson()).then(
+      await post(productsUri, body: product.copyWith(userId: userId).toJson())
+          .then(
         (response) {
           final postedProduct =
               product.copyWith(id: json.decode(response.body)['name']);
