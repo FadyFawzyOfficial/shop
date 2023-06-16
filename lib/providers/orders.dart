@@ -11,8 +11,13 @@ class Orders with ChangeNotifier {
   static const baseUrl =
       'fady-shop-default-rtdb.europe-west1.firebasedatabase.app';
   static const ordersPath = '/orders.json';
-  final ordersUri = Uri.https(baseUrl, ordersPath);
 
+  Orders({this.authToken, List<Order>? orders})
+      : ordersUri = Uri.https(baseUrl, ordersPath, {'auth': authToken}),
+        _orders = orders ?? [];
+
+  final String? authToken;
+  late final Uri ordersUri;
   List<Order> _orders = [];
 
   List<Order> get orders => [..._orders];
