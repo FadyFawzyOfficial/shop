@@ -118,6 +118,10 @@ class AuthCardState extends State<AuthCard> {
 
     if (_authMode == AuthMode.signIn) {
       // Log user in
+      await Provider.of<Auth>(context, listen: false).signIn(
+        email: _authData['email']!,
+        password: _authData['password']!,
+      );
     } else {
       // Sign user up
       await Provider.of<Auth>(context, listen: false).signUp(
