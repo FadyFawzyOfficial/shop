@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/http_exception.dart';
 import '../providers/auth.dart';
 
 enum AuthMode { signUp, signIn }
@@ -116,18 +117,22 @@ class AuthCardState extends State<AuthCard> {
 
     setState(() => _isLoading = true);
 
-    if (_authMode == AuthMode.signIn) {
-      // Log user in
-      await Provider.of<Auth>(context, listen: false).signIn(
-        email: _authData['email']!,
-        password: _authData['password']!,
-      );
-    } else {
-      // Sign user up
-      await Provider.of<Auth>(context, listen: false).signUp(
-        email: _authData['email']!,
-        password: _authData['password']!,
-      );
+    try {
+      if (_authMode == AuthMode.signIn) {
+        // Log user in
+        await Provider.of<Auth>(context, listen: false).signIn(
+          email: _authData['email']!,
+          password: _authData['password']!,
+        );
+      } else {
+        // Sign user up
+        await Provider.of<Auth>(context, listen: false).signUp(
+          email: _authData['email']!,
+          password: _authData['password']!,
+        );
+      }
+    } on HttpException catch (error) {
+      _showErrorDialog(error.message);
     }
 
     setState(() => _isLoading = false);
@@ -139,6 +144,22 @@ class AuthCardState extends State<AuthCard> {
     } else {
       setState(() => _authMode = AuthMode.signIn);
     }
+  }
+
+  void _showErrorDialog(String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('An Error Occurred!'),
+        content: Text(errorMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Okay'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

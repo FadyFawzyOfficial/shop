@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 
+import '../models/http_exception.dart';
+
 class Auth with ChangeNotifier {
   static const apiKey = '?key=AIzaSyCCZrB4cUxYue1WNE7s8xjrgn0j32rogmk';
   static const signUpUrlSegment = 'signUp';
@@ -19,16 +21,46 @@ class Auth with ChangeNotifier {
     required String password,
     required String urlSegment,
   }) async {
-    final response = await post(
-      Uri.parse('$authenticateUrl$urlSegment$apiKey'),
-      body: json.encode({
-        'email': email,
-        'password': password,
-        'returnSecureToken': true,
-      }),
-    );
+    try {
+      final response = await post(
+        Uri.parse('$authenticateUrl$urlSegment$apiKey'),
+        body: json.encode({
+          'email': email,
+          'password': password,
+          'returnSecureToken': true,
+        }),
+      );
+      final responseBody = json.decode(response.body);
 
-    print(response.body);
+      if (responseBody['error'] != null) {
+        // What's the idea behind throwing an exception here?
+        // We can of course now manage or handle that exception in the AuthScreen
+        // which is where we're in the widget and where we can present something
+        // to the user, show an alert to the user for example.
+        final String error = responseBody['error']['message'];
+        var errorMessage = 'Authentication failed!';
+
+        if (error.contains('EMAIL_EXISTS')) {
+          errorMessage = 'This email address is already in use!';
+        } else if (error.contains('EMAIL_NOT_FOUND')) {
+          errorMessage = 'Could not find a user with that email.';
+        } else if (error.contains('INVALID_EMAIL')) {
+          errorMessage = 'This is not a valid email address.';
+        } else if (error.contains('INVALID_PASSWORD')) {
+          errorMessage = 'Invalid password!';
+        } else if (error.contains('WEAK_PASSWORD')) {
+          errorMessage = 'This password is too weak.';
+        }
+
+        throw HttpException(message: errorMessage);
+      }
+    } on HttpException {
+      rethrow;
+    } catch (error) {
+      throw HttpException(
+        message: 'Could not authenticate you. Please try again later!',
+      );
+    }
   }
 
   // We return this future because this is the future which actually wraps our
