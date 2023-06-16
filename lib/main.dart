@@ -46,7 +46,8 @@ class MyApp extends StatelessWidget {
           // we pass an auth token.
           update: (context, authProvider, previous) => Products(
             // Pass the user's auth token for outgoing HTTP requests of Products Provider.
-            authToken: authProvider.token!,
+            authToken: authProvider.token,
+            userId: authProvider.userId,
             // We have to make sure that when gets rebuild and we create a new
             // instance of Products, we don't lose all the data we had in there
             // before (previousProducts) because in Products Provider you mustn't
