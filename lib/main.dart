@@ -25,10 +25,39 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => Auth()),
-        ChangeNotifierProvider(
-          //! For Efficiency: Use 'create:' if you are creating a new instance.
-          //* It's recommended more than '.value:' Constructor.
+        // How do we actually get the authToken (out of Auth class) into our Products class?
+        // Use ChangeNotifierProxyProvider which is Generic class<>
+        // This allows you to set up a provider, which itself depends on another
+        // provider which was defined before (Auth Provider).
+        // 1st Generic argument: is the class that the type of data you depend on.
+        // 2nd Generic argument: is the class that the type of data will provide here.
+        ChangeNotifierProxyProvider<Auth, Products>(
+          // We just add create method because it just required.
           create: (context) => Products(),
+          // So, the update here will receive that 'authProvider' object (1st Generic argument)
+          // and whenever Auth Provider changes, this provider here will also be rebuilt.
+          // Only this one, not the entire widget, not the other providers.
+          // Because this 'authProvider' object is now dependent on Auth Provider.
+          // So, it makes sense that this provider rebuilds and new products
+          // object here would be built when auth changes instead of previous
+          // state of products object (old products object).
+          // So, pervious products object which passed (2nd Generic argument)
+          // will update by returning a new object of type Products after
+          // we pass an auth token.
+          update: (context, authProvider, previous) => Products(
+            // Pass the user's auth token for outgoing HTTP requests of Products Provider.
+            authToken: authProvider.token!,
+            // We have to make sure that when gets rebuild and we create a new
+            // instance of Products, we don't lose all the data we had in there
+            // before (previousProducts) because in Products Provider you mustn't
+            // forget that you had a list of your products that was the what
+            // we were managing in there, the list of our products.
+            // While it's first time to initialize Products object, the previousProducts
+            // will be empty [] (not instantiated) with no products list at all.
+            // So, this will create the products object with auth token and then
+            // either with an empty list of products or with the previous items.
+            products: previous?.products,
+          ),
         ),
         ChangeNotifierProvider(
           create: (context) => Cart(),
