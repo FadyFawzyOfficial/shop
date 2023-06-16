@@ -140,5 +140,11 @@ class Products with ChangeNotifier {
     }
   }
 
-  Uri getProductUri(String id) => Uri.https(baseUrl, '/products/$id.json');
+  Uri getProductUri(String id) {
+    return Uri.https(
+      baseUrl,
+      '/products/$id.json',
+      {'auth': authToken},
+    );
+  }
 }
