@@ -10,6 +10,7 @@ import 'screens/cart_screen.dart';
 import 'screens/edit_product_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/product_detail_screen.dart';
+import 'screens/products_overview_screen.dart';
 import 'screens/user_products_screen.dart';
 
 void main() => runApp(const MyApp());
@@ -36,21 +37,25 @@ class MyApp extends StatelessWidget {
           create: (context) => Orders(),
         ),
       ],
-      child: MaterialApp(
-        theme: ThemeData(
-          primarySwatch: Colors.purple,
-          accentColor: Colors.deepOrange,
-          fontFamily: 'Lato',
+      child: Consumer<Auth>(
+        builder: (context, authProvider, _) => MaterialApp(
+          theme: ThemeData(
+            primarySwatch: Colors.purple,
+            accentColor: Colors.deepOrange,
+            fontFamily: 'Lato',
+          ),
+          title: appName,
+          home: authProvider.isAuthenticated
+              ? const ProductsOverviewScreen()
+              : const AuthScreen(),
+          routes: {
+            ProductDetailScreen.routeName: (_) => const ProductDetailScreen(),
+            CartScreen.routeName: (_) => const CartScreen(),
+            OrdersScreen.routeName: (_) => const OrdersScreen(),
+            UserProductsScreen.routeName: (_) => const UserProductsScreen(),
+            EditProductScreen.routeName: (_) => const EditProductScreen(),
+          },
         ),
-        title: appName,
-        home: const AuthScreen(),
-        routes: {
-          ProductDetailScreen.routeName: (_) => const ProductDetailScreen(),
-          CartScreen.routeName: (_) => const CartScreen(),
-          OrdersScreen.routeName: (_) => const OrdersScreen(),
-          UserProductsScreen.routeName: (_) => const UserProductsScreen(),
-          EditProductScreen.routeName: (_) => const EditProductScreen(),
-        },
       ),
     );
   }

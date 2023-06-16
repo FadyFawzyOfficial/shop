@@ -12,9 +12,19 @@ class Auth with ChangeNotifier {
   static const authenticateUrl =
       'https://identitytoolkit.googleapis.com/v1/accounts:';
 
-  late String _token;
-  late DateTime _expiryDate;
+  String? _token;
+  DateTime? _expiryDate;
   late String _userId;
+
+  bool get isAuthenticated => token != null;
+
+  String? get token {
+    if (_token != null &&
+        _expiryDate != null &&
+        _expiryDate!.isAfter(DateTime.now())) return _token;
+
+    return null;
+  }
 
   Future<void> _authenticate({
     required String email,
@@ -54,6 +64,12 @@ class Auth with ChangeNotifier {
 
         throw HttpException(message: errorMessage);
       }
+
+      _token = responseBody['idToken'];
+      _userId = responseBody['localId'];
+      _expiryDate = DateTime.now()
+          .add(Duration(seconds: int.tryParse(responseBody['expiresIn']) ?? 0));
+      notifyListeners();
     } on HttpException {
       rethrow;
     } catch (error) {
