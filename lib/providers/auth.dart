@@ -106,4 +106,10 @@ class Auth with ChangeNotifier {
         password: password,
         urlSegment: signInUrlSegment,
       );
+
+  void signOut() {
+    _token = null;
+    _expiryDate = null;
+    notifyListeners();
+  }
 }
