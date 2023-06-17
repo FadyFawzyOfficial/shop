@@ -11,15 +11,18 @@ class Products with ChangeNotifier {
       'fady-shop-default-rtdb.europe-west1.firebasedatabase.app';
   static const productsPath = '/products.json';
 
-  Products({this.authToken, List<Product>? products}) {
+  Products({
+    this.authToken,
+    this.userId,
+    List<Product>? products,
+  }) {
     productsUri = Uri.https(baseUrl, productsPath, {'auth': authToken});
     _products = products ?? [];
   }
 
   final String? authToken;
-
+  final String? userId;
   late final Uri productsUri;
-
   List<Product> _products = [];
 
   List<Product> get products => [..._products];
@@ -30,19 +33,59 @@ class Products with ChangeNotifier {
   Product getProductById({required String id}) =>
       _products.firstWhere((product) => product.id == id);
 
-  Future<void> fetchProducts() async {
+  Future<void> fetchProducts({bool filterByUser = false}) async {
+    final List<Product> products = [];
+    final uri = !filterByUser
+        ? productsUri
+        : productsUri.replace(
+            queryParameters: {
+              'auth': authToken,
+              'orderBy': '"userId"', // json.encode('userId'),
+              'equalTo': '"$userId"', // json.encode(userId),
+            },
+          );
+
     try {
-      final List<Product> products = [];
-      final response = await get(productsUri);
+      final response = await get(uri);
       final fetchedData = json.decode(response.body) as Map<String, dynamic>?;
 
       // So that the following code doesn't run if fetched data is null and
       // return here to avoid that you run code which would fail if you have no data
       if (fetchedData == null) return;
+      print(fetchedData);
 
-      fetchedData.forEach((productId, productData) {
-        products.add(Product.fromMap(productData).copyWith(id: productId));
-      });
+      // When we fetch products, we of course also want to fetch data for the
+      // favorite status according to each user.
+      // So, we also fetch the favorite statuses before transforming products data.
+      // Here because: I don't want to do that if we have no products.
+      // So, I'll wait for the previous check (if statement).
+
+      // It's time for another request where we get our favorite response
+      print(favoriteProductsUri(userId!));
+      final favoriteResponse = await get(favoriteProductsUri(userId!));
+      final favoriteData = json.decode(favoriteResponse.body);
+      print(favoriteData);
+
+      fetchedData.forEach(
+        (productId, productData) {
+          products.add(
+            Product.fromMap(productData).copyWith(
+              id: productId,
+              // If favoriteData is null, then this user has never favorited anything.
+              // So then obviously every product will just be not a favorite,
+              // so we set this to false.
+              // If favoriteData isn't null, then the user has some favorite data
+              // we can check for that productId(key here), but that productId still
+              // might not exist (null). So, I want to user an alternative value if
+              // it is null. With double question mark (??) operator to use that value
+              // and if it is null it will fallback to the value after the ?? marks.
+              isFavorite: favoriteData == null
+                  ? false
+                  : favoriteData[productId] ?? false,
+            ),
+          );
+        },
+      );
 
       _products = products;
       notifyListeners();
@@ -58,7 +101,8 @@ class Products with ChangeNotifier {
       // We don't have to return future anymore because we automatically have
       // this all wrapped into a future and that future will also be returned
       // automatically.
-      await post(productsUri, body: product.toJson()).then(
+      await post(productsUri, body: product.copyWith(userId: userId).toJson())
+          .then(
         (response) {
           final postedProduct =
               product.copyWith(id: json.decode(response.body)['name']);
@@ -94,9 +138,9 @@ class Products with ChangeNotifier {
     product.toggleFavorite();
 
     try {
-      final response = await patch(
-        getProductUri(product.id),
-        body: product.toJson(),
+      final response = await put(
+        favoriteProductsUri(userId!, product.id),
+        body: json.encode(product.isFavorite),
       );
 
       // The HTTP package only throws its own error for get and post requests
@@ -138,6 +182,14 @@ class Products with ChangeNotifier {
       notifyListeners();
       rethrow;
     }
+  }
+
+  Uri favoriteProductsUri(String userId, [String? productId]) {
+    return Uri.https(
+      baseUrl,
+      '/userFavorites/$userId${productId != null ? '/$productId' : ''}.json',
+      {'auth': authToken},
+    );
   }
 
   Uri getProductUri(String id) {

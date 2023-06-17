@@ -10,13 +10,17 @@ import '../models/order.dart';
 class Orders with ChangeNotifier {
   static const baseUrl =
       'fady-shop-default-rtdb.europe-west1.firebasedatabase.app';
-  static const ordersPath = '/orders.json';
 
-  Orders({this.authToken, List<Order>? orders})
-      : ordersUri = Uri.https(baseUrl, ordersPath, {'auth': authToken}),
+  Orders({this.authToken, this.userId, List<Order>? orders})
+      : ordersUri = Uri.https(
+          baseUrl,
+          '/orders/$userId.json',
+          {'auth': authToken},
+        ),
         _orders = orders ?? [];
 
   final String? authToken;
+  final String? userId;
   late final Uri ordersUri;
   List<Order> _orders = [];
 
