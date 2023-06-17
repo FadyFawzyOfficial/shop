@@ -58,7 +58,7 @@ class Product with ChangeNotifier {
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
       id: map['id'],
-      userId: map['userId'],
+      userId: map['userId'] ?? '',
       title: map['title'],
       description: map['description'],
       imageUrl: map['imageUrl'],

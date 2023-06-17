@@ -29,7 +29,7 @@ class UserProductsScreen extends StatelessWidget {
       drawer: const AppDrawer(),
       body: Consumer<Products>(
         builder: (context, provider, child) => RefreshIndicator(
-          onRefresh: provider.fetchProducts,
+          onRefresh: () => provider.fetchProducts(filterByUser: true),
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 16),
             itemCount: provider.products.length,

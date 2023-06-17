@@ -33,15 +33,26 @@ class Products with ChangeNotifier {
   Product getProductById({required String id}) =>
       _products.firstWhere((product) => product.id == id);
 
-  Future<void> fetchProducts() async {
+  Future<void> fetchProducts({bool filterByUser = false}) async {
+    final List<Product> products = [];
+    final uri = !filterByUser
+        ? productsUri
+        : productsUri.replace(
+            queryParameters: {
+              'auth': authToken,
+              'orderBy': '"userId"', // json.encode('userId'),
+              'equalTo': '"$userId"', // json.encode(userId),
+            },
+          );
+
     try {
-      final List<Product> products = [];
-      final response = await get(productsUri);
+      final response = await get(uri);
       final fetchedData = json.decode(response.body) as Map<String, dynamic>?;
 
       // So that the following code doesn't run if fetched data is null and
       // return here to avoid that you run code which would fail if you have no data
       if (fetchedData == null) return;
+      print(fetchedData);
 
       // When we fetch products, we of course also want to fetch data for the
       // favorite status according to each user.
