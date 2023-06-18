@@ -11,6 +11,7 @@ import 'screens/edit_product_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/product_detail_screen.dart';
 import 'screens/products_overview_screen.dart';
+import 'screens/splash_screen.dart';
 import 'screens/user_products_screen.dart';
 
 void main() => runApp(const MyApp());
@@ -80,9 +81,29 @@ class MyApp extends StatelessWidget {
             fontFamily: 'Lato',
           ),
           title: appName,
+          // Home Screen depends on the question whether we're authenticated or not.
+          //! Now here, if we're not authenticated, I don't automatically want to
+          //! show the AuthScreen, I instead want to try Signing In.
+          // We can do that with the FutureBuilder Widget.
           home: authProvider.isAuthenticated
               ? const ProductsOverviewScreen()
-              : const AuthScreen(),
+              : FutureBuilder(
+                  // If we're not authenticated, Try to auto Signing In.
+                  // This future will yield true or false.
+                  future: authProvider.autoSignIn(),
+                  builder: (context, snapshot) => snapshot.connectionState ==
+                          ConnectionState.waiting
+                      // Show the SplashScreen (Waiting or Loading Screen)
+                      // for a short period of time where we're not yet decided
+                      // we're signed in or not.
+                      // Because it's not the best user experience if we show
+                      // the AuthScreen where the user might start entering data
+                      // and then suddenly we see, Ooh, the user is signed in
+                      // and we present a totally different screen.
+                      ? SplashScreen()
+                      // Show the AuthScreen only for not waiting.
+                      : const AuthScreen(),
+                ),
           routes: {
             ProductDetailScreen.routeName: (_) => const ProductDetailScreen(),
             CartScreen.routeName: (_) => const CartScreen(),
