@@ -76,8 +76,8 @@ class Auth with ChangeNotifier {
       _expiryDate = DateTime.now()
           .add(Duration(seconds: int.tryParse(responseBody['expiresIn']) ?? 0));
       _autoSignOut();
-      notifyListeners();
       _storeAuthData();
+      notifyListeners();
     } on HttpException {
       rethrow;
     } catch (error) {
@@ -116,6 +116,8 @@ class Auth with ChangeNotifier {
   Future<bool> autoSignIn() async {
     final authData = await _retrieveAuthData();
 
+    print('Auto SignIn $authData');
+
     if (authData == null) return false;
 
     // Here, If we reach here that means we have a valid token because the expiry
@@ -124,9 +126,9 @@ class Auth with ChangeNotifier {
     _token = authData['token'];
     _userId = authData['userId'] ?? '';
     _expiryDate = DateTime.tryParse(authData['expiryDate']!);
-    notifyListeners();
     // call autoSignOut to set that timer again.
     _autoSignOut();
+    notifyListeners();
     // Important to return true.
     return true;
   }
@@ -171,7 +173,7 @@ class Auth with ChangeNotifier {
     prefs.setString(authDataKey, authData);
   }
 
-  Future<Map<String, String>?> _retrieveAuthData() async {
+  Future<Map<String, dynamic>?> _retrieveAuthData() async {
     // Access the SharedPreferences.
     final prefs = await SharedPreferences.getInstance();
 
@@ -182,7 +184,7 @@ class Auth with ChangeNotifier {
     // It might still be an invalid token which already expired in the meantime,
     // but we can get some data.
     final authData =
-        json.decode(prefs.getString(authDataKey)!) as Map<String, String>;
+        json.decode(prefs.getString(authDataKey)!) as Map<String, dynamic>;
 
     // From the extracted auth data, we can get the expiry date because we want to
     // check that date and see whether it still is valid or not.
