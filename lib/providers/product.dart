@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 class Product with ChangeNotifier {
   final String id;
+  String userId;
   final String title;
   final String description;
   final String imageUrl;
@@ -12,6 +13,7 @@ class Product with ChangeNotifier {
 
   Product({
     required this.id,
+    this.userId = '',
     required this.title,
     required this.description,
     required this.imageUrl,
@@ -21,6 +23,7 @@ class Product with ChangeNotifier {
 
   Product copyWith({
     String? id,
+    String? userId,
     String? title,
     String? description,
     String? imageUrl,
@@ -29,6 +32,7 @@ class Product with ChangeNotifier {
   }) {
     return Product(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       title: title ?? this.title,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
@@ -40,6 +44,7 @@ class Product with ChangeNotifier {
   factory Product.initial() {
     return Product(
       id: DateTime.now().toString(),
+      userId: '',
       title: '',
       description: '',
       imageUrl: '',
@@ -53,6 +58,7 @@ class Product with ChangeNotifier {
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
       id: map['id'],
+      userId: map['userId'] ?? '',
       title: map['title'],
       description: map['description'],
       imageUrl: map['imageUrl'],
@@ -66,6 +72,7 @@ class Product with ChangeNotifier {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'userId': userId,
       'title': title,
       'description': description,
       'imageUrl': imageUrl,
@@ -80,7 +87,6 @@ class Product with ChangeNotifier {
   }
 
   @override
-  String toString() {
-    return 'Product(id: $id, title: $title, description: $description, imageUrl: $imageUrl, price: $price, isFavorite: $isFavorite)';
-  }
+  String toString() =>
+      'Product(id: $id, userId: $userId, title: $title, description: $description, imageUrl: $imageUrl, price: $price, isFavorite: $isFavorite)';
 }
