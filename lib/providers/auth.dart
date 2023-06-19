@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/http_exception.dart';
 
 class Auth with ChangeNotifier {
+  static const authDataKey = 'authData';
   static const apiKey = '?key=AIzaSyCCZrB4cUxYue1WNE7s8xjrgn0j32rogmk';
   static const signUpUrlSegment = 'signUp';
   static const signInUrlSegment = 'signInWithPassword';
@@ -15,6 +18,7 @@ class Auth with ChangeNotifier {
   String? _token;
   DateTime? _expiryDate;
   late String _userId;
+  Timer? _authTimer;
 
   bool get isAuthenticated => token != null;
 
@@ -71,6 +75,8 @@ class Auth with ChangeNotifier {
       _userId = responseBody['localId'];
       _expiryDate = DateTime.now()
           .add(Duration(seconds: int.tryParse(responseBody['expiresIn']) ?? 0));
+      _autoSignOut();
+      _storeAuthData();
       notifyListeners();
     } on HttpException {
       rethrow;
@@ -106,4 +112,103 @@ class Auth with ChangeNotifier {
         password: password,
         urlSegment: signInUrlSegment,
       );
+
+  Future<bool> autoSignIn() async {
+    final authData = await _retrieveAuthData();
+
+    print('Auto SignIn $authData');
+
+    if (authData == null) return false;
+
+    // Here, If we reach here that means we have a valid token because the expiry
+    // date now is in the future and this is now when we want to reinitialize
+    // all auth properties up there.
+    _token = authData['token'];
+    _userId = authData['userId'] ?? '';
+    _expiryDate = DateTime.tryParse(authData['expiryDate']!);
+    // call autoSignOut to set that timer again.
+    _autoSignOut();
+    notifyListeners();
+    // Important to return true.
+    return true;
+  }
+
+  // So, here in signOut(), I also get access to SharedPreferences by awaiting.
+  // For that, we have to turn this into an async function which means it will
+  // return a future that yields nothing.
+  Future<void> signOut() async {
+    _token = null;
+    _expiryDate = null;
+
+    if (_authTimer != null) {
+      _authTimer!.cancel();
+      _authTimer = null;
+    }
+
+    notifyListeners();
+    _clearAuthData();
+  }
+
+  void _autoSignOut() {
+    if (_authTimer != null) {
+      _authTimer!.cancel();
+    }
+
+    final timeToExpiry = _expiryDate!.difference(DateTime.now()).inSeconds;
+    _authTimer = Timer(Duration(seconds: timeToExpiry), signOut);
+  }
+
+  // Store User Authentication data on the device in the SharedPreferences Storage.
+  Future<void> _storeAuthData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // We complex data by the way, wo we use json.encode and encode a map into
+    // JSON because JSON is always a String.
+    final String authData = json.encode({
+      'token': _token,
+      'userId': _userId,
+      'expiryDate': _expiryDate?.toIso8601String(),
+    });
+
+    prefs.setString(authDataKey, authData);
+  }
+
+  Future<Map<String, dynamic>?> _retrieveAuthData() async {
+    // Access the SharedPreferences.
+    final prefs = await SharedPreferences.getInstance();
+
+    // If the SharedPreferences doesn't contain the auth data, then there is no data stored.
+    if (!prefs.containsKey(authDataKey)) return null;
+
+    // If we do have that auth data key, we know that we can at least get a token
+    // It might still be an invalid token which already expired in the meantime,
+    // but we can get some data.
+    final authData =
+        json.decode(prefs.getString(authDataKey)!) as Map<String, dynamic>;
+
+    // From the extracted auth data, we can get the expiry date because we want to
+    // check that date and see whether it still is valid or not.
+    // By using DateTime.parse() which works because we stored the date as an
+    // ISO8601String to get DateTime Object.
+    final expiryDate = DateTime.parse(authData['expiryDate']!);
+
+    // Check if expiry date is before the time now, we know the token is not valid
+    // and we can return false here and we don't need to continue, we certainly
+    // have no valid token because the expiry date is in the past.
+    if (expiryDate.isBefore(DateTime.now())) return null;
+
+    return authData;
+  }
+
+  Future<void> _clearAuthData() async {
+    final prefs = await SharedPreferences.getInstance();
+    // We can call remove() and pass in the key what we want to remove.
+    // This will be good if we storing multiple things in the SharedPreferences,
+    // which we don't all want to delete if we're logging out.
+    //! prefs.remove('userData');
+
+    // But if I know I only store the auth data there, I can also just call clear().
+    // This will delete all your app's data from the SharedPreferences.
+    prefs.clear();
+  }
 }
