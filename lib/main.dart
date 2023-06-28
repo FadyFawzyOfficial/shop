@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'helper/fade_route_transition.dart';
 import 'providers/auth.dart';
 import 'providers/cart.dart';
 import 'providers/orders.dart';
@@ -79,6 +80,18 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.purple,
             accentColor: Colors.deepOrange,
             fontFamily: 'Lato',
+            //* If you want to apply Custom Route Transition to all routes including
+            //* named routes, you can set a pageTransitionTheme, this takes a page
+            //* transition theme where you set up some builders.
+            //* builders attribute is a map of different builder functions for
+            //* different operating systems (Android, iOS).
+            //* Now you should actually have that fade transition for every route change.
+            pageTransitionsTheme: PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: FadePageTransitionBuilder(),
+                TargetPlatform.iOS: FadePageTransitionBuilder(),
+              },
+            ),
           ),
           title: appName,
           // Home Screen depends on the question whether we're authenticated or not.

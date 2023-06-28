@@ -28,18 +28,18 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.payment_rounded),
             title: const Text('Orders'),
-            // onTap: () => Navigator.pushReplacementNamed(
-            //   context,
-            //   OrdersScreen.routeName,
-            // ),
+            onTap: () => Navigator.pushReplacementNamed(
+              context,
+              OrdersScreen.routeName,
+            ),
             //* With this go to Shop and then go to the order screen and observe.
             //* It just has a fade animation, it doesn't have that push from the
             //* bottom animation, it just fades because it's using our CustomRoute.
-            onTap: () => Navigator.of(context).pushReplacement(
-              FadeRouteTransition(
-                builder: (context) => const OrdersScreen(),
-              ),
-            ),
+            // onTap: () => Navigator.of(context).pushReplacement(
+            //   FadeRouteTransition(
+            //     builder: (context) => const OrdersScreen(),
+            //   ),
+            // ),
           ),
           const Divider(),
           ListTile(
