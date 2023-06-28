@@ -98,16 +98,32 @@ class AuthCard extends StatefulWidget {
   AuthCardState createState() => AuthCardState();
 }
 
-class AuthCardState extends State<AuthCard> {
+class AuthCardState extends State<AuthCard>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<FormState> _formKey = GlobalKey();
-  AuthMode _authMode = AuthMode.signIn;
+  final _passwordController = TextEditingController();
   final _authData = {
     'email': '',
     'password': '',
   };
 
+  late final AnimationController _animationController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 500),
+  );
+
+  late final Animation<Size> _heightAnimation = Tween(
+    begin: const Size(double.infinity, 260),
+    end: const Size(double.infinity, 320),
+  ).animate(
+    CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ),
+  );
+
+  AuthMode _authMode = AuthMode.signIn;
   var _isLoading = false;
-  final _passwordController = TextEditingController();
 
   //! Remember to make it Future to display the Loading Spinner
   Future<void> _submit() async {
@@ -141,8 +157,10 @@ class AuthCardState extends State<AuthCard> {
   void _switchAuthMode() {
     if (_authMode == AuthMode.signIn) {
       setState(() => _authMode = AuthMode.signUp);
+      _animationController.forward();
     } else {
       setState(() => _authMode = AuthMode.signIn);
+      _animationController.reverse();
     }
   }
 
@@ -163,16 +181,29 @@ class AuthCardState extends State<AuthCard> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _heightAnimation.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print('AuthCard is Rebuilt');
     final deviceSize = MediaQuery.of(context).size;
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 8,
       child: Container(
-        height: _authMode == AuthMode.signUp ? 320 : 260,
+        // height: _authMode == AuthMode.signUp ? 320 : 260,
+        height: _heightAnimation.value.height,
         width: deviceSize.width * 0.75,
-        constraints:
-            BoxConstraints(minHeight: _authMode == AuthMode.signUp ? 320 : 260),
+        constraints: BoxConstraints(minHeight: _heightAnimation.value.height),
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
