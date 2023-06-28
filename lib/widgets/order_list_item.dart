@@ -33,36 +33,39 @@ class _OrderListItemState extends State<OrderListItem> {
               ),
             ),
           ),
-          if (_isExpanded)
-            Container(
-              padding: const EdgeInsets.all(16),
-              height: min(widget.order.products.length * 20 + 25, 100),
-              child: ListView.builder(
-                itemCount: widget.order.products.length,
-                itemBuilder: (context, index) {
-                  final product = widget.order.products[index];
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        product.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            padding: const EdgeInsets.all(16),
+            height: _isExpanded
+                ? min(widget.order.products.length * 32 + 16, 128)
+                : 0,
+            child: ListView.builder(
+              itemCount: widget.order.products.length,
+              itemBuilder: (context, index) {
+                final product = widget.order.products[index];
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      product.title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(
-                        '${product.quantity}x \$${product.price}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey,
-                        ),
+                    ),
+                    Text(
+                      '${product.quantity}x \$${product.price}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey,
                       ),
-                    ],
-                  );
-                },
-              ),
+                    ),
+                  ],
+                );
+              },
             ),
+          ),
         ],
       ),
     );
