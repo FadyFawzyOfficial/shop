@@ -112,15 +112,15 @@ class AuthCardState extends State<AuthCard>
     duration: const Duration(milliseconds: 500),
   );
 
-  // late final Animation<Size> _heightAnimation = Tween(
-  //   begin: const Size(double.infinity, 260),
-  //   end: const Size(double.infinity, 320),
-  // ).animate(
-  //   CurvedAnimation(
-  //     parent: _animationController,
-  //     curve: Curves.easeInOut,
-  //   ),
-  // );
+  late final Animation<Offset> _slideAnimation = Tween(
+    begin: const Offset(0, -1),
+    end: const Offset(0, 0),
+  ).animate(
+    CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ),
+  );
 
   late final Animation<double> _opacityAnimation = Tween<double>(
     begin: 0,
@@ -252,20 +252,23 @@ class AuthCardState extends State<AuthCard>
                     minHeight: _authMode == AuthMode.signUp ? 60 : 0,
                     maxHeight: _authMode == AuthMode.signUp ? 120 : 0,
                   ),
-                  child: FadeTransition(
-                    opacity: _opacityAnimation,
-                    child: TextFormField(
-                      enabled: _authMode == AuthMode.signUp,
-                      decoration:
-                          const InputDecoration(labelText: 'Confirm Password'),
-                      obscureText: true,
-                      validator: _authMode == AuthMode.signUp
-                          ? (value) {
-                              return value != _passwordController.text
-                                  ? 'Passwords do not match!'
-                                  : null;
-                            }
-                          : null,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: FadeTransition(
+                      opacity: _opacityAnimation,
+                      child: TextFormField(
+                        enabled: _authMode == AuthMode.signUp,
+                        decoration: const InputDecoration(
+                            labelText: 'Confirm Password'),
+                        obscureText: true,
+                        validator: _authMode == AuthMode.signUp
+                            ? (value) {
+                                return value != _passwordController.text
+                                    ? 'Passwords do not match!'
+                                    : null;
+                              }
+                            : null,
+                      ),
                     ),
                   ),
                 ),
