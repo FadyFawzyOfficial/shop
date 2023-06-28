@@ -240,8 +240,19 @@ class AuthCardState extends State<AuthCard>
                   },
                   onSaved: (value) => _authData['password'] = value!,
                 ),
-                if (_authMode == AuthMode.signUp)
-                  FadeTransition(
+                // if (_authMode == AuthMode.signUp)
+                // Wrap the FadeTransition into AnimatedContainer which we actually
+                // shrink to a height of zero when it should not be visible, and
+                // give it a more appropriate height that leaves enough space for
+                // the TextFormField when it should be visible.
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeIn,
+                  constraints: BoxConstraints(
+                    minHeight: _authMode == AuthMode.signUp ? 60 : 0,
+                    maxHeight: _authMode == AuthMode.signUp ? 120 : 0,
+                  ),
+                  child: FadeTransition(
                     opacity: _opacityAnimation,
                     child: TextFormField(
                       enabled: _authMode == AuthMode.signUp,
@@ -257,6 +268,7 @@ class AuthCardState extends State<AuthCard>
                           : null,
                     ),
                   ),
+                ),
                 const SizedBox(height: 20),
                 _isLoading
                     ? const CircularProgressIndicator()
