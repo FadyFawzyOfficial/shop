@@ -6,6 +6,8 @@ import '../providers/product.dart';
 import '../providers/products.dart';
 import '../screens/product_detail_screen.dart';
 
+const productPlaceholderImagePath = 'assets/images/product_placeholder.png';
+
 class ProductGridItem extends StatelessWidget {
   const ProductGridItem({super.key});
 
@@ -69,9 +71,13 @@ class ProductGridItem extends StatelessWidget {
             ProductDetailScreen.routeName,
             arguments: product.id,
           ),
-          child: Image.network(
-            product.imageUrl,
-            fit: BoxFit.cover,
+          child: Hero(
+            tag: product.id,
+            child: FadeInImage(
+              placeholder: const AssetImage(productPlaceholderImagePath),
+              image: NetworkImage(product.imageUrl),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),
