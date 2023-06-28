@@ -71,10 +71,13 @@ class ProductGridItem extends StatelessWidget {
             ProductDetailScreen.routeName,
             arguments: product.id,
           ),
-          child: FadeInImage(
-            placeholder: const AssetImage(productPlaceholderImagePath),
-            image: NetworkImage(product.imageUrl),
-            fit: BoxFit.cover,
+          child: Hero(
+            tag: product.id,
+            child: FadeInImage(
+              placeholder: const AssetImage(productPlaceholderImagePath),
+              image: NetworkImage(product.imageUrl),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),
