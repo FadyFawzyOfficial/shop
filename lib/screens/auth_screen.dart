@@ -181,12 +181,6 @@ class AuthCardState extends State<AuthCard>
   }
 
   @override
-  void initState() {
-    super.initState();
-    _heightAnimation.addListener(() => setState(() {}));
-  }
-
-  @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
@@ -194,17 +188,20 @@ class AuthCardState extends State<AuthCard>
 
   @override
   Widget build(BuildContext context) {
-    print('AuthCard is Rebuilt');
+    print('AuthCard is Rebuilt'); //! Watch this for this commit & previous
     final deviceSize = MediaQuery.of(context).size;
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 8,
-      child: Container(
-        // height: _authMode == AuthMode.signUp ? 320 : 260,
-        height: _heightAnimation.value.height,
-        width: deviceSize.width * 0.75,
-        constraints: BoxConstraints(minHeight: _heightAnimation.value.height),
-        padding: const EdgeInsets.all(16),
+      child: AnimatedBuilder(
+        animation: _heightAnimation,
+        builder: (context, child) => Container(
+          height: _heightAnimation.value.height,
+          width: deviceSize.width * 0.75,
+          constraints: BoxConstraints(minHeight: _heightAnimation.value.height),
+          padding: const EdgeInsets.all(16),
+          child: child,
+        ),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
