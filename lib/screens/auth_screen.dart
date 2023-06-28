@@ -98,16 +98,42 @@ class AuthCard extends StatefulWidget {
   AuthCardState createState() => AuthCardState();
 }
 
-class AuthCardState extends State<AuthCard> {
+class AuthCardState extends State<AuthCard>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<FormState> _formKey = GlobalKey();
-  AuthMode _authMode = AuthMode.signIn;
+  final _passwordController = TextEditingController();
   final _authData = {
     'email': '',
     'password': '',
   };
 
+  late final AnimationController _animationController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 500),
+  );
+
+  late final Animation<Offset> _slideAnimation = Tween(
+    begin: const Offset(0, -1),
+    end: const Offset(0, 0),
+  ).animate(
+    CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ),
+  );
+
+  late final Animation<double> _opacityAnimation = Tween<double>(
+    begin: 0,
+    end: 1,
+  ).animate(
+    CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeIn,
+    ),
+  );
+
+  AuthMode _authMode = AuthMode.signIn;
   var _isLoading = false;
-  final _passwordController = TextEditingController();
 
   //! Remember to make it Future to display the Loading Spinner
   Future<void> _submit() async {
@@ -141,8 +167,10 @@ class AuthCardState extends State<AuthCard> {
   void _switchAuthMode() {
     if (_authMode == AuthMode.signIn) {
       setState(() => _authMode = AuthMode.signUp);
+      _animationController.forward();
     } else {
       setState(() => _authMode = AuthMode.signIn);
+      _animationController.reverse();
     }
   }
 
@@ -162,18 +190,28 @@ class AuthCardState extends State<AuthCard> {
     );
   }
 
+  // @override
+  // void dispose() {
+  //   _animationController.dispose();
+  //   super.dispose();
+  // }
+
   @override
   Widget build(BuildContext context) {
+    print('AuthCard is Rebuilt'); //! Watch this for this commit & previous
     final deviceSize = MediaQuery.of(context).size;
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 8,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
         height: _authMode == AuthMode.signUp ? 320 : 260,
         width: deviceSize.width * 0.75,
-        constraints:
-            BoxConstraints(minHeight: _authMode == AuthMode.signUp ? 320 : 260),
         padding: const EdgeInsets.all(16),
+        constraints: BoxConstraints(
+          minHeight: _authMode == AuthMode.signUp ? 320 : 260,
+        ),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -202,20 +240,38 @@ class AuthCardState extends State<AuthCard> {
                   },
                   onSaved: (value) => _authData['password'] = value!,
                 ),
-                if (_authMode == AuthMode.signUp)
-                  TextFormField(
-                    enabled: _authMode == AuthMode.signUp,
-                    decoration:
-                        const InputDecoration(labelText: 'Confirm Password'),
-                    obscureText: true,
-                    validator: _authMode == AuthMode.signUp
-                        ? (value) {
-                            return value != _passwordController.text
-                                ? 'Passwords do not match!'
-                                : null;
-                          }
-                        : null,
+                // if (_authMode == AuthMode.signUp)
+                // Wrap the FadeTransition into AnimatedContainer which we actually
+                // shrink to a height of zero when it should not be visible, and
+                // give it a more appropriate height that leaves enough space for
+                // the TextFormField when it should be visible.
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeIn,
+                  constraints: BoxConstraints(
+                    minHeight: _authMode == AuthMode.signUp ? 60 : 0,
+                    maxHeight: _authMode == AuthMode.signUp ? 120 : 0,
                   ),
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: FadeTransition(
+                      opacity: _opacityAnimation,
+                      child: TextFormField(
+                        enabled: _authMode == AuthMode.signUp,
+                        decoration: const InputDecoration(
+                            labelText: 'Confirm Password'),
+                        obscureText: true,
+                        validator: _authMode == AuthMode.signUp
+                            ? (value) {
+                                return value != _passwordController.text
+                                    ? 'Passwords do not match!'
+                                    : null;
+                              }
+                            : null,
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 _isLoading
                     ? const CircularProgressIndicator()
