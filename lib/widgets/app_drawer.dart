@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../helper/fade_route_transition.dart';
 import '../providers/auth.dart';
 import '../screens/orders_screen.dart';
 import '../screens/user_products_screen.dart';
@@ -31,6 +32,14 @@ class AppDrawer extends StatelessWidget {
               context,
               OrdersScreen.routeName,
             ),
+            //* With this go to Shop and then go to the order screen and observe.
+            //* It just has a fade animation, it doesn't have that push from the
+            //* bottom animation, it just fades because it's using our CustomRoute.
+            // onTap: () => Navigator.of(context).pushReplacement(
+            //   FadeRouteTransition(
+            //     builder: (context) => const OrdersScreen(),
+            //   ),
+            // ),
           ),
           const Divider(),
           ListTile(
